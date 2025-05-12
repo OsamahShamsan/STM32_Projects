@@ -1,5 +1,0 @@
-../Core/Src/menu.c:35:6:Menu_Init	8	static
-../Core/Src/menu.c:41:6:Menu_Display	16	static
-../Core/Src/menu.c:59:6:Menu_UpdateLine	16	static
-../Core/Src/menu.c:66:13:Menu_ExecuteSelected	16	static
-../Core/Src/menu.c:73:6:Menu_HandleInput	24	static
