@@ -1,0 +1,61 @@
+#include "vt100.h"
+#include "vt100_esc.h"
+#include "uart_dma.h"
+#include <string.h>
+#include <stdio.h>
+
+static void vt100_send(const char* str);
+static void vt100_send_line(const char* str);
+
+// Send raw string to UART via DMA
+static void vt100_send(const char* str) {
+    uart_dma_send((const uint8_t*)str, strlen(str));
+}
+
+// Send string followed by CR+LF (for explicit line break when needed)
+static void vt100_send_line(const char* str) {
+    vt100_send(str);
+    vt100_send("\r\n");
+}
+
+// Move cursor to specific line and column (1-based)
+void vt100_goto(uint8_t row, uint8_t col) {
+    char cmd[32];
+    snprintf(cmd, sizeof(cmd), "\033[%d;%dH", row, col);
+    vt100_send(cmd);
+}
+
+// Move cursor to start of specific line
+void vt100_goto_line(uint8_t line) {
+    vt100_goto(line, 1);
+}
+
+// Clear entire screen and move cursor to home
+void vt100_clear_screen(void) {
+    vt100_send(VT100_CLEAR_SCREEN);
+    vt100_send(VT100_CURSOR_HOME);
+}
+
+// Clear entire current line
+void vt100_clear_line(void) {
+    vt100_send(VT100_CLEAR_LINE);
+}
+
+// Cursor visibility control
+void vt100_cursor_hide(void) {
+    vt100_send(VT100_CURSOR_HIDE);
+}
+
+void vt100_cursor_show(void) {
+    vt100_send(VT100_CURSOR_SHOW);
+}
+
+// Set text color attribute (pass VT100_BOLD, VT100_RED, etc.)
+void vt100_set_color(const char* attr) {
+    if (attr) vt100_send(attr);
+}
+
+// Reset color to normal
+void vt100_reset_color(void) {
+    vt100_send(VT100_RESET);
+}

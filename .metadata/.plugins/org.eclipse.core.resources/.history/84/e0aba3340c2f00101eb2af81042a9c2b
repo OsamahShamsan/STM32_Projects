@@ -1,0 +1,30 @@
+#ifndef VT100_H
+#define VT100_H
+
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+// --- Core terminal functions ---
+void vt100_write_SRAM_text(const char* str);
+void vt100_write_SRAM_line(const char* str);
+void vt100_write_char(char c);
+
+// --- Terminal control (cursor, clear, etc.) ---
+void vt100_goto(uint8_t row, uint8_t col);
+void vt100_goto_line(uint8_t line);
+void vt100_clear_screen(void);
+void vt100_clear_line(void);
+void vt100_cursor_hide(void);
+void vt100_cursor_show(void);
+void vt100_set_color(const char* attr);
+void vt100_reset_color(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // VT100_H

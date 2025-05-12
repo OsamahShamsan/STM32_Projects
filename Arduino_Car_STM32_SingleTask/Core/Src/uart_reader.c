@@ -1,0 +1,45 @@
+/*
+// -----------------------------
+// File: uart_reader.c
+// -----------------------------
+#include "uart_reader.h"
+#include "usart.h"
+#include <string.h>
+
+static char rx_buffer[UART_RX_BUFFER_SIZE];
+static uint16_t rx_index = 0;
+static bool line_ready = false;
+
+void uart_reader_init(void) {
+    rx_index = 0;
+    line_ready = false;
+    HAL_UART_Receive_IT(&huart2, (uint8_t*)&rx_buffer[rx_index], 1);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart == &huart2) {
+        if (rx_buffer[rx_index] == '\n' || rx_index >= UART_RX_BUFFER_SIZE - 1) {
+            rx_buffer[rx_index + 1] = '\0';
+            line_ready = true;
+            rx_index = 0; // reset for next line
+        } else {
+            rx_index++;
+        }
+        HAL_UART_Receive_IT(&huart2, (uint8_t*)&rx_buffer[rx_index], 1);
+    }
+}
+
+void uart_reader_poll(void) {
+    // Optional for polling-based RX (not needed with IRQ)
+}
+
+bool uart_line_available(void) {
+    return line_ready;
+}
+
+const char* uart_read_line(void) {
+    line_ready = false;
+    return rx_buffer;
+}
+
+*/

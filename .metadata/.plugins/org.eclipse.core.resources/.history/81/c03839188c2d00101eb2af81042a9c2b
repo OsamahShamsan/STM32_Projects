@@ -1,0 +1,40 @@
+// -----------------------------
+// File: uart_writer.c
+// -----------------------------
+#include "uart_writer.h"
+#include <string.h>
+#include "usart.h"
+
+#define UART_TX_BUFFER_SIZE 512
+
+static uint8_t tx_buffer[UART_TX_BUFFER_SIZE];
+static volatile bool uart_tx_busy = false;
+
+void uart_send_blocking(const char* str) {
+    if (str == NULL) return;
+    size_t len = strlen(str);
+    HAL_UART_Transmit(&huart2, (uint8_t*)str, (uint16_t)len, HAL_MAX_DELAY);
+}
+
+bool uart_send_async(const char* str) {
+    if (uart_tx_busy || str == NULL) return false;
+
+    size_t len = strlen(str);
+    if (len > UART_TX_BUFFER_SIZE)
+        len = UART_TX_BUFFER_SIZE;
+
+    memcpy(tx_buffer, str, len);
+    uart_tx_busy = true;
+    HAL_UART_Transmit_IT(&huart2, tx_buffer, (uint16_t)len);
+    return true;
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart) {
+    if (huart == &huart2) {
+        uart_tx_busy = false;
+    }
+}
+
+bool uart_is_busy(void) {
+    return uart_tx_busy;
+}

@@ -1,0 +1,66 @@
+#include "uart_dma.h"
+#include <string.h>
+
+static UART_HandleTypeDef* uart;
+static uint8_t dma_rx_buffer[UART_RX_BUFFER_SIZE];
+static uint8_t ring_buffer[UART_RING_BUFFER_SIZE];
+static volatile uint16_t ring_head = 0;
+static volatile uint16_t ring_tail = 0;
+
+static char current_line[UART_LINE_BUFFER_SIZE];
+static uint16_t current_line_index = 0;
+static bool line_ready = false;
+
+void UART_DMA_Init(UART_HandleTypeDef* huart_ref) {
+    uart = huart_ref;
+
+    HAL_UART_Receive_DMA(uart, dma_rx_buffer, UART_RX_BUFFER_SIZE);
+    __HAL_DMA_ENABLE_IT(uart->hdmarx, DMA_IT_HT);
+    __HAL_DMA_ENABLE_IT(uart->hdmarx, DMA_IT_TC);
+}
+
+void UART_DMA_ProcessChunk(uint16_t start, uint16_t length) {
+    for (uint16_t i = 0; i < length; i++) {
+        uint8_t byte = dma_rx_buffer[(start + i) % UART_RX_BUFFER_SIZE];
+        uint16_t next_head = (ring_head + 1) % UART_RING_BUFFER_SIZE;
+        if (next_head != ring_tail) {
+            ring_buffer[ring_head] = byte;
+            ring_head = next_head;
+        }
+    }
+}
+
+void UART_DMA_Poll(void) {
+    while (ring_tail != ring_head) {
+        uint8_t byte = ring_buffer[ring_tail];
+        ring_tail = (ring_tail + 1) % UART_RING_BUFFER_SIZE;
+
+        if (!line_ready) {
+            if (byte == '\r' || byte == '\n') {
+                if (current_line_index > 0) {
+                    current_line[current_line_index] = '\0';
+                    line_ready = true;
+                    current_line_index = 0;
+                }
+            } else {
+                if (current_line_index < UART_LINE_BUFFER_SIZE - 1) {
+                    current_line[current_line_index++] = byte;
+                }
+            }
+        }
+    }
+}
+
+bool UART_DMA_GetLine(char* dest, uint16_t max_len) {
+    if (line_ready) {
+        strncpy(dest, current_line, max_len - 1);
+        dest[max_len - 1] = '\0';
+        line_ready = false;
+        return true;
+    }
+    return false;
+}
+
+void UART_DMA_SendString(const char* str) {
+    HAL_UART_Transmit_DMA(uart, (uint8_t*)str, strlen(str));
+}

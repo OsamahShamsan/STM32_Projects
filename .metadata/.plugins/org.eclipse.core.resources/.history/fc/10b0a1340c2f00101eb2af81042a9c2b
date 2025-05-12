@@ -1,0 +1,63 @@
+#include "vt100.h"
+#include "uart_dma.h"
+#include <string.h>
+#include <stdio.h>
+
+// Internal low-level send helpers (private)
+static void vt100_send(const char* str) {
+    uart_dma_send((const uint8_t*)str, strlen(str));
+}
+
+static void vt100_send_char(char c) {
+    uart_dma_send((const uint8_t*)&c, 1);
+}
+
+// User-facing API
+void vt100_write_SRAM_text(const char* str) {
+    vt100_send(str);
+}
+
+void vt100_write_SRAM_line(const char* str) {
+    vt100_send(str);
+    vt100_send("\r\n");
+}
+
+void vt100_write_char(char c) {
+    vt100_send_char(c);
+}
+
+// Terminal control
+void vt100_goto(uint8_t row, uint8_t col) {
+    char cmd[32];
+    snprintf(cmd, sizeof(cmd), "\033[%d;%dH", row, col);
+    vt100_send(cmd);
+}
+
+void vt100_goto_line(uint8_t line) {
+    vt100_goto(line, 1);
+}
+
+void vt100_clear_screen(void) {
+    vt100_send("\033[2J");
+    vt100_send("\033[H");
+}
+
+void vt100_clear_line(void) {
+    vt100_send("\033[2K");
+}
+
+void vt100_cursor_hide(void) {
+    vt100_send("\033[?25l");
+}
+
+void vt100_cursor_show(void) {
+    vt100_send("\033[?25h");
+}
+
+void vt100_set_color(const char* attr) {
+    if (attr) vt100_send(attr);
+}
+
+void vt100_reset_color(void) {
+    vt100_send("\033[0m");
+}

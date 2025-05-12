@@ -1,0 +1,92 @@
+// === menu.c ===
+#include "menu.h"
+#include "uart_dma.h"
+#include "vt100.h"
+#include <string.h>
+
+#define TOTAL_MENU_LINES 5
+#define MENU_LINE_SIZE 64
+
+static const char* intro_lines[] = {
+    "-------------------------",
+    "  Welcome to the System!",
+    "  Select an option below:",
+    "-------------------------"
+};
+
+static const char* instructions = "Use [1m↑[0m [1m↓[0m to navigate. Press Enter to select.
+";
+
+static const char* menu_lines[TOTAL_MENU_LINES] = {
+    "Option 1 - Sensor Config",
+    "Option 2 - Motor Control",
+    "Option 3 - System Info",
+    "Option 4 - LCD Settings",
+    "Option 5 - Exit"
+};
+
+static int selected_index = 0;
+
+void send_line(const char* text, int is_selected) {
+    if (is_selected) uart_dma_send((uint8_t*)"> ", 2);
+    else uart_dma_send((uint8_t*)"  ", 2);
+    uart_dma_send((uint8_t*)text, strlen(text));
+    uart_dma_send((uint8_t*)"\r\n", 2);
+}
+
+void Menu_Init(void) {
+    selected_index = 0;
+    uart_dma_send((uint8_t*)VT100_CLEAR_SCREEN, strlen(VT100_CLEAR_SCREEN));
+    uart_dma_send((uint8_t*)VT100_CURSOR_HOME, strlen(VT100_CURSOR_HOME));
+    uart_dma_receive_start();
+    Menu_Display();}
+
+void Menu_Display(void) {
+    uart_dma_send((uint8_t*)VT100_CLEAR_SCREEN, strlen(VT100_CLEAR_SCREEN));
+    uart_dma_send((uint8_t*)VT100_CURSOR_HOME, strlen(VT100_CURSOR_HOME));
+
+    for (int i = 0; i < sizeof(intro_lines)/sizeof(intro_lines[0]); i++) {
+        uart_dma_send((uint8_t*)intro_lines[i], strlen(intro_lines[i]));
+        uart_dma_send((uint8_t*)"
+", 2);
+    }
+
+    uart_dma_send((uint8_t*)instructions, strlen(instructions));
+
+    for (int i = 0; i < TOTAL_MENU_LINES; i++) {
+        send_line(menu_lines[i], i == selected_index);
+    }}
+}
+
+void Menu_HandleInput(uint8_t input) {
+    // Expecting raw input characters like ESC sequences or ASCII
+    static uint8_t esc_state = 0;
+
+    if (esc_state == 0) {
+        if (input == 27) { // ESC
+            esc_state = 1;
+        } else if (input == '\r') {
+            // Enter key (handle selection)
+            // You can switch menu state here later
+        } else if (input == 27) {
+            // ESC key pressed (return to main menu)
+            Menu_Init();
+            esc_state = 0;
+            return;}
+    } else if (esc_state == 1) {
+        if (input == '[') {
+            esc_state = 2;
+        } else {
+            esc_state = 0;
+        }
+    } else if (esc_state == 2) {
+        if (input == 'A') { // Up arrow
+            if (selected_index > 0) selected_index--;
+            Menu_Display();
+        } else if (input == 'B') { // Down arrow
+            if (selected_index < TOTAL_MENU_LINES - 1) selected_index++;
+            Menu_Display();
+        }
+        esc_state = 0;
+    }
+}

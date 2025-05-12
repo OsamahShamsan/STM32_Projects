@@ -1,0 +1,4 @@
+../Core/Src/uart_dma.c:8:6:uart_dma_init	16	static
+../Core/Src/uart_dma.c:15:6:uart_dma_handle_idle	16	static
+../Core/Src/uart_dma.c:20:16:uart_dma_get_new_bytes	24	static
+../Core/Src/uart_dma.c:46:6:uart_dma_send	16	static

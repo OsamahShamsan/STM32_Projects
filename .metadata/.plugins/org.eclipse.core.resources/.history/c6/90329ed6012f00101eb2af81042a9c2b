@@ -1,0 +1,85 @@
+#include "uart_dma.h"
+#include "menu.h"
+#include <string.h>
+
+static UART_HandleTypeDef* uart;
+
+static uint8_t dma_rx_buffer[UART_RX_BUFFER_SIZE];
+static uint16_t last_read_pos = 0;
+
+static uint8_t tx_queue[UART_TX_QUEUE_SIZE];
+static volatile uint16_t tx_head = 0;
+static volatile uint16_t tx_tail = 0;
+
+static uint8_t tx_dma_buffer[UART_TX_QUEUE_SIZE];
+static volatile bool tx_busy = false;
+
+void uart_dma_init(UART_HandleTypeDef* huart_ref) {
+    uart = huart_ref;
+
+    // RX setup
+    HAL_UART_Receive_DMA(uart, dma_rx_buffer, UART_RX_BUFFER_SIZE);
+    __HAL_UART_ENABLE_IT(uart, UART_IT_IDLE);
+
+    // TX init
+    tx_head = tx_tail = 0;
+    tx_busy = false;
+}
+
+void uart_dma_handle_idle(void) {
+    uint16_t dma_pos = UART_RX_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(uart->hdmarx);
+
+    if (dma_pos != last_read_pos) {
+        if (dma_pos > last_read_pos) {
+            for (uint16_t i = last_read_pos; i < dma_pos; i++) {
+                Menu_HandleInput(dma_rx_buffer[i]);
+            }
+        } else {
+            for (uint16_t i = last_read_pos; i < UART_RX_BUFFER_SIZE; i++) {
+                Menu_HandleInput(dma_rx_buffer[i]);
+            }
+            for (uint16_t i = 0; i < dma_pos; i++) {
+                Menu_HandleInput(dma_rx_buffer[i]);
+            }
+        }
+        last_read_pos = dma_pos;
+    }
+}
+
+static void uart_dma_start_next_tx(void) {
+    if (tx_head == tx_tail) {
+        tx_busy = false;
+        return;
+    }
+
+    uint16_t i = 0;
+    while (tx_tail != tx_head && i < sizeof(tx_dma_buffer)) {
+        tx_dma_buffer[i++] = tx_queue[tx_tail];
+        tx_tail = (tx_tail + 1) % UART_TX_QUEUE_SIZE;
+    }
+
+    tx_busy = true;
+    HAL_UART_Transmit_DMA(uart, tx_dma_buffer, i);
+}
+
+void uart_dma_send(const uint8_t* data, uint16_t len) {
+    for (uint16_t i = 0; i < len; i++) {
+        uint16_t next_head = (tx_head + 1) % UART_TX_QUEUE_SIZE;
+        if (next_head == tx_tail) {
+            // Queue full – drop byte or block (optional)
+            return;
+        }
+        tx_queue[tx_head] = data[i];
+        tx_head = next_head;
+    }
+
+    if (!tx_busy) {
+        uart_dma_start_next_tx();
+    }
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart_ref) {
+    if (huart_ref->Instance == uart->Instance) {
+        uart_dma_start_next_tx();  // Start next message if queued
+    }
+}

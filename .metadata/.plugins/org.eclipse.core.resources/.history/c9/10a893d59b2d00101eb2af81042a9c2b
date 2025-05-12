@@ -1,0 +1,24 @@
+// -----------------------------
+// File: uart_writer.h
+// -----------------------------
+#ifndef UART_WRITER_H
+#define UART_WRITER_H
+
+#include <string.h>
+#include "usart.h"
+#include <stdbool.h>
+
+
+#define UART_TX_BUFFER_SIZE 128                // Chunk size per transmission
+#define UART_MSG_MAX_LEN     256               // Max length of each message
+#define UART_QUEUE_DEPTH      8                // Max number of messages in the queue
+#define UART_TX_TIMEOUT_MS 100				   // Time to block the UART transmitting
+
+bool uart_send_blocking(const char* str);
+bool uart_send_async(const char* str);
+bool uart_is_busy(void);
+
+
+
+
+#endif // UART_WRITER_H

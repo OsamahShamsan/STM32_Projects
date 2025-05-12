@@ -1,0 +1,34 @@
+// === eeprom_emul.c ===
+#include "eeprom_emul.h"
+#include "eeprom.h" // from STM32Cube EEPROM emulation library
+#include <string.h>
+
+#define EEPROM_MENU_LINES 3
+#define EEPROM_LINE_SIZE 32
+static char eeprom_menu_buffer[EEPROM_MENU_LINES][EEPROM_LINE_SIZE] = {0};
+
+const char* default_eeprom_menu[EEPROM_MENU_LINES] = {
+    "EEPROM 1",
+    "EEPROM 2 - slightly longer",
+    "EEPROM 3 - line to test max line length issues in terminal output"
+};
+
+void eeprom_emul_init(void) {
+    EE_Init();
+    for (uint16_t i = 0; i < EEPROM_MENU_LINES; i++) {
+        uint16_t data[EEPROM_LINE_SIZE / 2];
+        if (EE_ReadVariable(i, &data[0]) != HAL_OK || data[0] == 0xFFFF) {
+            memcpy(data, default_eeprom_menu[i], EEPROM_LINE_SIZE);
+            for (uint16_t j = 0; j < EEPROM_LINE_SIZE / 2; j++) {
+                EE_WriteVariable(i * (EEPROM_LINE_SIZE / 2) + j, data[j]);
+            }
+        }
+    }
+}
+
+void eeprom_emul_read_menu(char** lines) {
+    for (uint16_t i = 0; i < EEPROM_MENU_LINES; i++) {
+        EE_ReadVariable(i * (EEPROM_LINE_SIZE / 2), (uint16_t*)&eeprom_menu_buffer[i]);
+        lines[i] = eeprom_menu_buffer[i];
+    }
+}

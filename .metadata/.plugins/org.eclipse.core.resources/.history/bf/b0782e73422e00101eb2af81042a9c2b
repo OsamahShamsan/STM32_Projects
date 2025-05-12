@@ -1,0 +1,14 @@
+// === uart_dma.h ===
+#ifndef UART_DMA_H
+#define UART_DMA_H
+
+#include <stdint.h>
+#include <string.h>
+
+#define UART_TX_BUFFER_SIZE 256
+
+void uart_dma_send(uint8_t* data, uint16_t size);
+void uart_dma_process(void);
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
+
+#endif // UART_DMA_H

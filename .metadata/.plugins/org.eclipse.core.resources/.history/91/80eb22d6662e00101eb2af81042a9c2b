@@ -1,0 +1,55 @@
+#include "vt100.h"
+#include "uart_dma.h"
+#include <string.h>
+#include <stdio.h>
+
+void vt100_send(const char* str) {
+    uart_dma_send((const uint8_t*)str, strlen(str));
+}
+
+void vt100_send_line(const char* str) {
+    vt100_send(str);
+    uart_dma_send((const uint8_t*)"\r\n", 2);
+}
+
+void vt100_goto_line(uint8_t line) {
+    char cmd[32];
+    snprintf(cmd, sizeof(cmd), "\033[%d;1H", line);
+    uart_dma_send((const uint8_t*)cmd, strlen(cmd));
+}
+
+void vt100_clear_screen(void) {
+    vt100_send(VT100_CLEAR_SCREEN);
+}
+
+void vt100_cursor_home(void) {
+    vt100_send(VT100_CURSOR_HOME);
+}
+
+void vt100_cursor_hide(void) {
+    vt100_send(VT100_CURSOR_HIDE);
+}
+
+void vt100_cursor_show(void) {
+    vt100_send(VT100_CURSOR_SHOW);
+}
+
+void vt100_get_clear_screen(char* out, size_t size) {
+    if (out && size >= 5)
+        snprintf(out, size, "%s%s", VT100_CLEAR_SCREEN, VT100_CURSOR_HOME);
+}
+
+void vt100_get_move_cursor(char* out, size_t size, uint8_t row, uint8_t col) {
+    if (out && size >= 8)
+        snprintf(out, size, ESC "[%d;%dH", row, col);
+}
+
+void vt100_get_set_color(char* out, size_t size, const char* attr) {
+    if (out && attr)
+        snprintf(out, size, "%s", attr);
+}
+
+void vt100_get_reset_color(char* out, size_t size) {
+    if (out)
+        snprintf(out, size, "%s", VT100_RESET);
+}

@@ -1,0 +1,28 @@
+// === menu.c ===
+#include "menu.h"
+#include "uart_dma.h"
+#include "vt100.h"
+#include <string.h>
+
+#define TOTAL_MENU_LINES 3
+#define MENU_LINE_SIZE 64
+
+static char menu_lines[TOTAL_MENU_LINES][MENU_LINE_SIZE] = {
+    "Menu 1 - Short",
+    "Menu 2 - Medium width line",
+    "Menu 3 - This is a very long line to test wrapping in terminal"
+};
+
+void Menu_Init(void) {
+	uart_dma_send((uint8_t*)VT100_CLEAR_SCREEN, strlen(VT100_CLEAR_SCREEN));
+	uart_dma_send((uint8_t*)VT100_CURSOR_HOME, strlen(VT100_CURSOR_HOME));
+	uart_dma_send((uint8_t*)VT100_WHITE, strlen(VT100_WHITE));
+	uart_dma_send((uint8_t*)VT100_BG_BLACK, strlen(VT100_BG_BLACK));
+}
+
+void Menu_Display(void) {
+    for (int i = 0; i < TOTAL_MENU_LINES; i++) {
+        uart_dma_send((uint8_t*)menu_lines[i], strlen(menu_lines[i]));
+        uart_dma_send((uint8_t*)"\r\n", 2);
+    }
+}

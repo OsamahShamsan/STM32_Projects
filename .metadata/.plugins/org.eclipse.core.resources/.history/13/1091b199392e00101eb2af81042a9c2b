@@ -1,0 +1,9 @@
+// === eeprom_emul.h ===
+#ifndef EEPROM_EMUL_H
+#define EEPROM_EMUL_H
+
+#include <stdint.h>
+
+void eeprom_emul_read_menu(char** lines);
+
+#endif // EEPROM_EMUL_H

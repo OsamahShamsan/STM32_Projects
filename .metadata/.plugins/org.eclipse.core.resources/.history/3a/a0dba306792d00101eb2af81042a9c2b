@@ -1,0 +1,83 @@
+// vt100.h - Header file with VT100/ANSI escape codes and helper macros/functions
+// Place in: Core/Inc/vt100.h
+
+#ifndef VT100_H
+#define VT100_H
+
+#include <string>
+#include <cstdint>
+
+// ANSI escape character
+#define ESC "\033"
+
+// --- Basic text styles ---
+#define VT100_RESET         ESC "[0m"
+#define VT100_BOLD          ESC "[1m"
+#define VT100_FAINT         ESC "[2m"
+#define VT100_ITALIC        ESC "[3m"
+#define VT100_UNDERLINE     ESC "[4m"
+#define VT100_BLINK         ESC "[5m"
+#define VT100_REVERSE       ESC "[7m"
+#define VT100_INVISIBLE     ESC "[8m"
+
+// --- Foreground colors ---
+#define VT100_BLACK         ESC "[30m"
+#define VT100_RED           ESC "[31m"
+#define VT100_GREEN         ESC "[32m"
+#define VT100_YELLOW        ESC "[33m"
+#define VT100_BLUE          ESC "[34m"
+#define VT100_MAGENTA       ESC "[35m"
+#define VT100_CYAN          ESC "[36m"
+#define VT100_WHITE         ESC "[37m"
+
+// --- Background colors ---
+#define VT100_BG_BLACK      ESC "[40m"
+#define VT100_BG_RED        ESC "[41m"
+#define VT100_BG_GREEN      ESC "[42m"
+#define VT100_BG_YELLOW     ESC "[43m"
+#define VT100_BG_BLUE       ESC "[44m"
+#define VT100_BG_MAGENTA    ESC "[45m"
+#define VT100_BG_CYAN       ESC "[46m"
+#define VT100_BG_WHITE      ESC "[47m"
+
+// --- Cursor movement ---
+#define VT100_CURSOR_HOME         ESC "[H"
+#define VT100_CURSOR_SAVE         ESC "7"
+#define VT100_CURSOR_RESTORE      ESC "8"
+#define VT100_CURSOR_HIDE         ESC "[?25l"
+#define VT100_CURSOR_SHOW         ESC "[?25h"
+
+// --- Screen clearing ---
+#define VT100_CLEAR_SCREEN        ESC "[2J"
+#define VT100_CLEAR_LINE          ESC "[2K"
+#define VT100_CLEAR_EOL           ESC "[K"
+#define VT100_CLEAR_BOL           ESC "[1K"
+#define VT100_CLEAR_DOWN          ESC "[0J"
+#define VT100_CLEAR_UP            ESC "[1J"
+
+// --- Positioning ---
+#define VT100_GOTO(y, x)          ESC "[" #y ";" #x "H"
+
+// --- Functions ---
+namespace vt100 {
+    inline void moveCursor(uint8_t row, uint8_t col, void(*send)(const char*)) {
+        char buf[16];
+        snprintf(buf, sizeof(buf), "\033[%d;%dH", row, col);
+        send(buf);
+    }
+
+    inline void clearScreen(void(*send)(const char*)) {
+        send(VT100_CLEAR_SCREEN);
+        send(VT100_CURSOR_HOME);
+    }
+
+    inline void setColor(const char* attr, void(*send)(const char*)) {
+        send(attr);
+    }
+
+    inline void resetColor(void(*send)(const char*)) {
+        send(VT100_RESET);
+    }
+}
+
+#endif // VT100_H

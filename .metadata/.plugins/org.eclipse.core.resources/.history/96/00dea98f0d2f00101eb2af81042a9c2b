@@ -1,0 +1,27 @@
+#ifndef MENU_H
+#define MENU_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+
+void Menu_Init(void);
+void Menu_Display(void);
+void Menu_HandleInput(uint8_t input);
+
+#define MENU_MARKER_SELECTED "> "
+#define MENU_MARKER_NORMAL   "  "
+
+#define MENU_KEY_ESC         27
+#define MENU_KEY_ENTER       '\r'
+#define MENU_KEY_BRACKET     '['
+#define MENU_KEY_ARROW_UP    'A'
+#define MENU_KEY_ARROW_DOWN  'B'
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // MENU_H

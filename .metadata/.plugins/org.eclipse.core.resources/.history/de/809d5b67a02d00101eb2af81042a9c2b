@@ -1,0 +1,21 @@
+// uart_writer.h
+#ifndef UART_WRITER_H
+#define UART_WRITER_H
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#define UART_TX_BUFFER_SIZE 128
+#define UART_MSG_MAX_LEN    256
+#define UART_QUEUE_DEPTH    8
+#define UART_TX_TIMEOUT_MS  100
+
+bool uart_send_blocking(const char* str);
+bool uart_send_async(const char* str);
+bool uart_is_busy(void);
+
+// Forward declaration for main.c to drive sending
+void uart_writer_continue_tx(void);
+
+#endif // UART_WRITER_H

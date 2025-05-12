@@ -1,0 +1,27 @@
+#ifndef UART_DMA_H
+#define UART_DMA_H
+
+#include <stdint.h>
+#include "stm32g4xx_hal.h"
+
+// === Configuration ===
+#define UART_RX_BUFFER_SIZE 128
+
+// === Functions ===
+
+// One-time setup: start RX DMA and prepare buffer
+void uart_dma_init_rx(void);
+
+// Call periodically or from interrupt to process received data
+void uart_dma_poll(void);
+
+// Non-blocking send via UART DMA
+void uart_dma_send(uint8_t* data, uint16_t size);
+
+// Called by HAL when DMA TX completes
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
+
+// Optional: called when DMA RX completes or triggers idle line detection
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+
+#endif // UART_DMA_H

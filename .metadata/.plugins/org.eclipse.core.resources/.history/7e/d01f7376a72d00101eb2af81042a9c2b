@@ -1,0 +1,117 @@
+// uart_writer.c
+#include "uart_writer.h"
+
+
+
+static char message_queue[UART_QUEUE_DEPTH][UART_MSG_MAX_LEN];
+static volatile uint8_t queue_head = 0;
+static volatile uint8_t queue_tail = 0;
+static volatile uint8_t queue_count = 0;
+
+static uint8_t tx_buffer[UART_TX_BUFFER_SIZE];
+static const char* current_str = NULL;
+static size_t str_len = 0;
+static size_t str_sent = 0;
+static volatile bool uart_tx_busy = false;
+
+static uart_writer_hal_interface_t hal_if = {0};
+
+void uart_write(UART_HandleTypeDef* huart, const char* msg) {
+    if (huart == NULL || msg == NULL) return;
+    HAL_UART_Transmit(huart, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
+void uart_writer_init(const uart_writer_hal_interface_t* interface) {
+    if (interface && interface->uart_transmit && interface->uart_transmit_it) {
+        hal_if = *interface;
+    }
+}
+
+bool uart_send_blocking(const char* str) {
+    if (!str || !hal_if.uart_transmit) return false;
+
+    size_t total_len = strlen(str);
+    size_t sent = 0;
+
+    while (sent < total_len) {
+        size_t remaining = total_len - sent;
+        uint16_t chunk_len = (remaining > UART_TX_BUFFER_SIZE)
+                             ? UART_TX_BUFFER_SIZE
+                             : (uint16_t)remaining;
+
+        if (!hal_if.uart_transmit((const uint8_t*)&str[sent], chunk_len))
+            return false;
+
+        sent += chunk_len;
+    }
+    return true;
+}
+
+
+bool uart_send_async(const char* str) {
+//bool uart_send_async(const char* uart_x) {
+
+	/*
+    if (!str || uart_tx_busy || !hal_if.uart_transmit_it) return false;
+
+    size_t len = strlen(str);
+    if (len >= UART_MSG_MAX_LEN || queue_count >= UART_QUEUE_DEPTH)
+        return false;
+
+    __disable_irq();
+    strncpy(message_queue[queue_tail], str, UART_MSG_MAX_LEN - 1);
+    message_queue[queue_tail][UART_MSG_MAX_LEN - 1] = '\0';
+    queue_tail = (queue_tail + 1) % UART_QUEUE_DEPTH;
+    queue_count++;
+    __enable_irq();
+
+    if (!uart_tx_busy) {
+        extern void uart_start_next_message(void);
+        uart_start_next_message();
+    }
+	*/
+
+    return true;
+}
+
+void uart_writer_on_tx_complete(void) {
+    if (!uart_tx_busy || !hal_if.uart_transmit_it) return;
+
+    if (str_sent < str_len) {
+        size_t remaining = str_len - str_sent;
+        size_t chunk_len = (remaining > UART_TX_BUFFER_SIZE) ? UART_TX_BUFFER_SIZE : remaining;
+        memcpy(tx_buffer, &current_str[str_sent], chunk_len);
+        str_sent += chunk_len;
+        hal_if.uart_transmit_it(tx_buffer, (uint16_t)chunk_len);
+    } else {
+        uart_tx_busy = false;
+        current_str = NULL;
+        str_len = 0;
+        str_sent = 0;
+        extern void uart_start_next_message(void);
+        uart_start_next_message();
+    }
+}
+
+// Forward-declared here and implemented at the bottom to ensure no circular deps
+void uart_start_next_message(void) {
+    if (queue_count == 0 || uart_tx_busy || !hal_if.uart_transmit_it)
+        return;
+
+    current_str = message_queue[queue_head];
+    str_len = strlen(current_str);
+    str_sent = 0;
+    uart_tx_busy = true;
+
+    queue_head = (queue_head + 1) % UART_QUEUE_DEPTH;
+    queue_count--;
+
+    size_t chunk_len = (str_len > UART_TX_BUFFER_SIZE) ? UART_TX_BUFFER_SIZE : str_len;
+    memcpy(tx_buffer, current_str, chunk_len);
+    str_sent += chunk_len;
+    hal_if.uart_transmit_it(tx_buffer, (uint16_t)chunk_len);
+}
+
+bool uart_is_busy(void) {
+    return uart_tx_busy;
+}

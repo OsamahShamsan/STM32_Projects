@@ -1,0 +1,26 @@
+#ifndef UART_DMA_H
+#define UART_DMA_H
+
+#include "stm32g4xx_hal.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define UART_RX_BUFFER_SIZE     64		// !!!
+#define UART_TX_QUEUE_SIZE      512  	// !!! Total TX buffer size
+
+void uart_dma_init(void);
+void uart_dma_handle_idle(void);
+const uint8_t* uart_dma_get_new_bytes(uint16_t* count);
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#endif // UART_DMA_H

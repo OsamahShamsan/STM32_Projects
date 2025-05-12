@@ -1,0 +1,41 @@
+// -----------------------------
+// File: uart_writer.h
+// -----------------------------
+#ifndef UART_WRITER_H
+#define UART_WRITER_H
+
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+#define UART_TX_BUFFER_SIZE 128
+#define UART_MSG_MAX_LEN    256
+#define UART_QUEUE_DEPTH    8
+#define UART_TX_TIMEOUT_MS  100
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// HAL-independent interface for injecting UART transmit functions
+typedef struct {
+    bool (*uart_transmit)(const uint8_t* data, uint16_t len);
+    bool (*uart_transmit_it)(const uint8_t* data, uint16_t len);
+} uart_writer_hal_interface_t;
+
+// Initialization with HAL transmit functions
+void uart_writer_init(const uart_writer_hal_interface_t* interface);
+
+// Main API
+bool uart_send_blocking(const char* str);
+bool uart_send_async(const char* str);
+bool uart_is_busy(void);
+
+// Call this from your HAL_UART_TxCpltCallback()
+void uart_writer_on_tx_complete(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // UART_WRITER_H

@@ -1,0 +1,77 @@
+// -----------------------------
+// File: vt100.h
+// -----------------------------
+#ifndef VT100_H
+#define VT100_H
+
+#include <stdint.h>
+
+#define ESC "\x1B"
+
+// Reset
+#define VT100_RESET ESC "[0m"
+
+// Text styles
+#define VT100_BOLD ESC "[1m"
+#define VT100_FAINT ESC "[2m"
+#define VT100_ITALIC ESC "[3m"
+#define VT100_UNDERLINE ESC "[4m"
+#define VT100_BLINK ESC "[5m"
+#define VT100_REVERSE ESC "[7m"
+#define VT100_INVISIBLE ESC "[8m"
+
+// Foreground colors
+#define VT100_BLACK ESC "[30m"
+#define VT100_RED ESC "[31m"
+#define VT100_GREEN ESC "[32m"
+#define VT100_YELLOW ESC "[33m"
+#define VT100_BLUE ESC "[34m"
+#define VT100_MAGENTA ESC "[35m"
+#define VT100_CYAN ESC "[36m"
+#define VT100_WHITE ESC "[37m"
+
+// Bright Foreground colors
+#define VT100_BRIGHT_BLACK ESC "[90m"
+#define VT100_BRIGHT_RED ESC "[91m"
+#define VT100_BRIGHT_GREEN ESC "[92m"
+#define VT100_BRIGHT_YELLOW ESC "[93m"
+#define VT100_BRIGHT_BLUE ESC "[94m"
+#define VT100_BRIGHT_MAGENTA ESC "[95m"
+#define VT100_BRIGHT_CYAN ESC "[96m"
+#define VT100_BRIGHT_WHITE ESC "[97m"
+
+// Background colors
+#define VT100_BG_BLACK ESC "[40m"
+#define VT100_BG_RED ESC "[41m"
+#define VT100_BG_GREEN ESC "[42m"
+#define VT100_BG_YELLOW ESC "[43m"
+#define VT100_BG_BLUE ESC "[44m"
+#define VT100_BG_MAGENTA ESC "[45m"
+#define VT100_BG_CYAN ESC "[46m"
+#define VT100_BG_WHITE ESC "[47m"
+
+// Bright Background colors
+#define VT100_BG_BRIGHT_BLACK ESC "[100m"
+#define VT100_BG_BRIGHT_RED ESC "[101m"
+#define VT100_BG_BRIGHT_GREEN ESC "[102m"
+#define VT100_BG_BRIGHT_YELLOW ESC "[103m"
+#define VT100_BG_BRIGHT_BLUE ESC "[104m"
+#define VT100_BG_BRIGHT_MAGENTA ESC "[105m"
+#define VT100_BG_BRIGHT_CYAN ESC "[106m"
+#define VT100_BG_BRIGHT_WHITE ESC "[107m"
+
+// Cursor commands
+#define VT100_CURSOR_HOME ESC "[H"
+#define VT100_CURSOR_HIDE ESC "[?25l"
+#define VT100_CURSOR_SHOW ESC "[?25h"
+#define VT100_CURSOR_SAVE ESC "[s"
+#define VT100_CURSOR_RESTORE ESC "[u"
+
+// Screen clearing
+#define VT100_CLEAR_SCREEN ESC "[2J"
+#define VT100_CLEAR_LINE ESC "[2K"
+#define VT100_CLEAR_LINE_START ESC "[1K"
+#define VT100_CLEAR_LINE_END ESC "[0K"
+
+
+#endif // VT100_H

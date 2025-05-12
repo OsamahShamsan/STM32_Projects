@@ -1,0 +1,55 @@
+// === flash_storage.c ===
+#include "flash_storage.h"
+#include "stm32g4xx_hal.h"
+#include <string.h>
+
+#define FLASH_MENU_START_ADDR ((uint32_t)0x0803F800) // Last page in 128KB Flash
+#define FLASH_LINE_SIZE 64
+#define FLASH_MENU_LINES 3
+#define FLASH_PAGE_SIZE 2048
+
+const char default_flash_menu[FLASH_MENU_LINES][FLASH_LINE_SIZE] = {
+    "Menu 1 - Short",
+    "Menu 2 - Medium width line",
+    "Menu 3 - This is a very long line to test wrapping in terminal"
+};
+
+void flash_storage_init(void) {
+    uint8_t needs_program = 0;
+    for (int i = 0; i < FLASH_MENU_LINES; i++) {
+        char* stored = (char*)(FLASH_MENU_START_ADDR + i * FLASH_LINE_SIZE);
+        if (stored[0] == 0xFF || stored[0] == '\0') {
+            needs_program = 1;
+            break;
+        }
+    }
+    if (!needs_program) return;
+
+    HAL_FLASH_Unlock();
+
+    FLASH_EraseInitTypeDef eraseInit;
+    uint32_t pageError = 0;
+
+    eraseInit.TypeErase = FLASH_TYPEERASE_PAGES;
+    eraseInit.Page = (FLASH_MENU_START_ADDR - FLASH_BASE) / FLASH_PAGE_SIZE;
+    eraseInit.NbPages = 1;
+    eraseInit.Banks = FLASH_BANK_1;
+
+    HAL_FLASHEx_Erase(&eraseInit, &pageError);
+
+    for (int i = 0; i < FLASH_MENU_LINES; i++) {
+        for (int j = 0; j < FLASH_LINE_SIZE; j += 8) {
+            uint64_t data = *((uint64_t*)&default_flash_menu[i][j]);
+            HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,
+                              FLASH_MENU_START_ADDR + i * FLASH_LINE_SIZE + j,
+                              data);
+        }
+    }
+    HAL_FLASH_Lock();
+}
+
+void flash_storage_read_menu(char** lines) {
+    for (int i = 0; i < FLASH_MENU_LINES; i++) {
+        lines[i] = (char*)(FLASH_MENU_START_ADDR + (i * FLASH_LINE_SIZE));
+    }
+}

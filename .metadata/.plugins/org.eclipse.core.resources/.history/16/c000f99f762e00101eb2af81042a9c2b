@@ -1,0 +1,39 @@
+#ifndef MENU_H
+#define MENU_H
+
+#include <stdint.h>
+
+
+#define MENU_LINE_SIZE   64
+
+#define MENU_TOTAL_LINES 4
+#define NUM_INSTRUCTION_LINES  1
+#define MENU_LINE_SPACER 2
+
+#define NUM_INTRO_LINES        (sizeof(intro_lines) / sizeof(intro_lines[0]))
+#define MENU_TOP_OFFSET        (NUM_INTRO_LINES + NUM_INSTRUCTION_LINES + 2)  // +1 spacer
+
+
+#define MENU_MARKER_SELECTED "> "
+#define MENU_MARKER_NORMAL   "  "
+
+#define MENU_KEY_ESC        27
+#define MENU_KEY_ENTER      '\r'
+#define MENU_KEY_BRACKET    '['
+#define MENU_KEY_ARROW_UP   'A'
+#define MENU_KEY_ARROW_DOWN 'B'
+#define MENU_KEY_ARROW_RIGHT 'C'
+#define MENU_KEY_ARROW_LEFT  'D'
+
+typedef enum {
+    ESC_STATE_NONE = 0,
+    ESC_STATE_ESC,
+    ESC_STATE_BRACKET
+} MenuEscState;
+
+void Menu_Init(void);
+void Menu_Display(void);
+void Menu_HandleInput(uint8_t input);
+void Menu_UpdateLine(int index, int is_selected);
+
+#endif // MENU_H

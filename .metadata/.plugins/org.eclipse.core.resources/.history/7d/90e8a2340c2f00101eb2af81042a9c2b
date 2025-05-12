@@ -1,0 +1,25 @@
+#ifndef MENU_H
+#define MENU_H
+
+#include <stdint.h>
+
+// --- Public menu APIs ---
+void Menu_Init(void);
+void Menu_Display(void);
+void Menu_UpdateLine(int index, int is_selected);
+void Menu_HandleInput(uint8_t input);
+
+// --- Menu UI settings ---
+#define MENU_MARKER_SELECTED "> "
+#define MENU_MARKER_NORMAL   "  "
+
+// --- Key codes ---
+#define MENU_KEY_ESC         27
+#define MENU_KEY_ENTER       '\r'
+#define MENU_KEY_BRACKET     '['
+#define MENU_KEY_ARROW_UP    'A'
+#define MENU_KEY_ARROW_DOWN  'B'
+#define MENU_KEY_ARROW_RIGHT 'C'
+#define MENU_KEY_ARROW_LEFT  'D'
+
+#endif // MENU_H

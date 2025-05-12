@@ -1,0 +1,12 @@
+// === menu.h ===
+#ifndef MENU_H
+#define MENU_H
+
+#include <stdint.h>
+
+void Menu_Init(void);
+void Menu_Display(void);
+void Menu_HandleInput(uint8_t input);
+void send_line(const char* text, int is_selected);
+
+#endif // MENU_H
