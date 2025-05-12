@@ -1,9 +1,0 @@
-// === menu.h ===
-#ifndef MENU_H
-#define MENU_H
-
-void send_line(const char* text, const char* style);
-void Menu_Init(void);
-void Menu_Display(void);
-
-#endif // MENU_H

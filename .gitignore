@@ -1,0 +1,16 @@
+# STM32CubeIDE workspace-specific files
+.metadata/
+
+# Build outputs
+**/Debug/
+**/Release/
+
+# IDE-specific files
+**/.settings/
+**/.cproject
+**/.project
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+

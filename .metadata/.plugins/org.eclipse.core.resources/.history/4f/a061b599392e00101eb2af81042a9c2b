@@ -1,9 +1,0 @@
-// === flash_storage.h ===
-#ifndef FLASH_STORAGE_H
-#define FLASH_STORAGE_H
-
-#include <stdint.h>
-
-void flash_storage_read_menu(char** lines);
-
-#endif // FLASH_STORAGE_H
