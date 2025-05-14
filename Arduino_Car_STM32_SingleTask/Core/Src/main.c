@@ -21,10 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <menu.h>
-#include <uart_dma.h>
-#include "vt100.h"
-
+#include "app_menu.h"
+#include "bsp_uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,7 +37,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define RX_BUFFER_SIZE 100
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -50,7 +48,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-uint8_t rx_buffer[RX_BUFFER_SIZE];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -99,19 +97,15 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  bsp_uart_init(&huart2);
+
+  //app_main();
+  app_menu_run();
 
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN BSP */
-  // To transmit and receive using DMA no waiting to RX_BUFFER_SIZE (Interrupt in idle and BUFFER_SIZE)
-  /*
-  HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, RX_BUFFER_SIZE);
-  __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT); // Disable half-transfer interrupt
-  */
 
-  // Init the home menu
-  uart_dma_init(&huart2);
-  Menu_Init();  // Shows initial VT100 screen
 
 
   /* USER CODE END BSP */
@@ -120,10 +114,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  vt100_process_rx_chunk();
-	  while (vt100_char_available()) {
-		  Menu_HandleInput(vt100_read_char());
-      }
 
     /* USER CODE END WHILE */
 
@@ -286,26 +276,8 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/*
-// Callback triggered when message ends (due to idle or full buffer)
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-    if (huart->Instance == USART2) {
-        // Example: Echo back received data
-        HAL_UART_Transmit_DMA(&huart2, rx_buffer, Size);
 
-        // Restart reception
-        HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, RX_BUFFER_SIZE);
-        __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
-    }
-}
 
-// Called when TX is done
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-    if (huart->Instance == USART2) {
-        // Optional: TX done, ready for next send
-    }
-}
-*/
 
 /* USER CODE END 4 */
 

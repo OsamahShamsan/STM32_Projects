@@ -6,9 +6,7 @@
 **/Release/
 
 # IDE-specific files
-**/.settings/
-**/.cproject
-**/.project
+
 
 # OS-specific files
 .DS_Store

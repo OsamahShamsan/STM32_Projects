@@ -1,10 +1,25 @@
 #include "vt100.h"
 #include "vt100_esc.h"
-#include "uart_dma.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <bsp_uart.h>
 
+
+void vt100_clear_screen(void)
+{
+    bsp_uart_send("\033[2J\033[H");
+}
+
+
+void vt100_goto(uint8_t row, uint8_t col)
+{
+    char buf[16];
+    sprintf(buf, "\033[%d;%dH", row, col);
+    bsp_uart_send(buf);
+}
+
+/*
 #define VT100_PRINT_BUFFER_SIZE  64
 #define VT100_CMD_BUFFER_SIZE 	 32
 #define VT100_NUMBER_BUFFER_SIZE 16
@@ -113,3 +128,4 @@ uint8_t vt100_read_char(void) {
     if (rx_tail >= UART_RX_BUFFER_SIZE) rx_tail = 0;
     return c;
 }
+*/

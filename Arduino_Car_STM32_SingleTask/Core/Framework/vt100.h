@@ -7,8 +7,10 @@ extern "C" {
 
 #include <stdint.h>
 
+void vt100_clear_screen(void);
+void vt100_goto(uint8_t row, uint8_t col);
 
-
+/*
 void vt100_init(void);
 void vt100_printf(const char* fmt, ...);
 void vt100_write_SRAM_text(const char* str);
@@ -27,6 +29,8 @@ void vt100_reset_attributes(void);
 void vt100_process_rx_chunk(void);
 uint8_t vt100_char_available(void);
 uint8_t vt100_read_char(void);
+
+*/
 
 #ifdef __cplusplus
 }
