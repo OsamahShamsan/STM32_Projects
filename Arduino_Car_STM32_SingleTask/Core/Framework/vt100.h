@@ -6,9 +6,13 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "vt100_esc.h"
 
 void vt100_clear_screen(void);
 void vt100_goto(uint8_t row, uint8_t col);
+void vt100_set_text_color(const char* color_code);
+void vt100_reset_attributes(void);
+void vt100_cursor_toggle(void);
 
 /*
 void vt100_init(void);

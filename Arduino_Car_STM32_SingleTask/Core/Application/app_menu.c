@@ -1,74 +1,94 @@
 #include "app_menu.h"
-#include "menu_system.h"
-#include "bsp_uart.h"
+#include "bsp_gpio.h"
+#include "vt100.h"
 
-// Internal declarations
-static void led_menu(void);
-static void info_menu(void);
-static void quit_menu(void);
-static void led_toggle_action(void);
-static void show_board_info(void);
-static void show_firmware_version(void);
+// ==== Application Actions (Logic & Result Reporting) ====
+const char* led_toggle_action(void)
+{
+    bsp_gpio_toggle(GPIOA, GPIO_PIN_5);
+    return "[LED] Toggled.";
+}
 
-// Main Menu Table
-static const MenuItem main_menu[] = {
-    {'1', "LED Control", led_menu},
-    {'2', "System Info", info_menu},
-    {'q', "Quit", quit_menu}
+const char* led_on_action(void)
+{
+    bsp_gpio_set(GPIOA, GPIO_PIN_5);
+    return "[LED] ON.";
+}
+
+const char* show_board_info(void)
+{
+    return "Board: Nucleo G431RB";
+}
+
+const char* led_off_action(void)
+{
+    bsp_gpio_clear(GPIOA, GPIO_PIN_5);
+    return "[LED] OFF.";
+}
+
+const char* show_firmware_version(void)
+{
+    return "Firmware Version: v1.0.0";
+}
+
+const char* quit_handler(void)
+{
+    return "Exiting BIOS Menu. (System Halted)";
+}
+
+const char* vt100_toggle_cursor(void)
+{
+    vt100_cursor_toggle();  // User-defined in vt100.c
+    return "[Terminal] Cursor visibility toggled.";
+}
+
+const char* vt100_set_blue_text(void)
+{
+    vt100_set_text_color(VT100_BLUE);
+    return "[Terminal] Text color set to BLUE.";
+}
+
+const char* vt100_set_default_style(void)
+{
+    vt100_reset_attributes();
+    return "[Terminal] Reset to default style.";
+}
+
+// ==== Submenus ====
+const MenuItem led_menu[] = {
+    {'1', "Toggle LED", led_toggle_action, NULL, 0},
+    {'2', "LED ON", led_on_action, NULL, 0},
+    {'3', "LED OFF", led_off_action, NULL, 0},
+    {'b', "Back", NULL, NULL, 0}
 };
+const int led_menu_size = sizeof(led_menu) / sizeof(MenuItem);
 
-// Sub Menus Table
-const MenuItem led_menu_items[] = {
-    {'1', "Toggle LED", led_toggle_action},
-    {'b', "Back", NULL}
+const MenuItem info_menu[] = {
+    {'1', "Board Info", show_board_info, NULL, 0},
+    {'2', "Firmware Version", show_firmware_version, NULL, 0},
+    {'b', "Back", NULL, NULL, 0}
 };
+const int info_menu_size = sizeof(info_menu) / sizeof(MenuItem);
 
-static const MenuItem info_menu_items[] = {
-    {'1', "Board Info", show_board_info},
-    {'2', "Firmware Version", show_firmware_version},
-    {'b', "Back", NULL}
+const MenuItem terminal_settings_menu[] = {
+    {'1', "Toggle Cursor Visibility", vt100_toggle_cursor, NULL, 0},
+    {'2', "Set Text Color to BLUE", vt100_set_blue_text, NULL, 0},
+    {'3', "Reset to Default Style", vt100_set_default_style, NULL, 0},
+    {'b', "Back", NULL, NULL, 0}
 };
+const int terminal_settings_menu_size = sizeof(terminal_settings_menu) / sizeof(MenuItem);
 
-// Public function
+// ==== Main Menu ====
+const MenuItem main_menu[] = {
+    {'1', "LED Control", NULL, led_menu, led_menu_size},
+    {'2', "System Info", NULL, info_menu, info_menu_size},
+    {'3', "Terminal Settings", NULL, terminal_settings_menu, terminal_settings_menu_size},
+    {'q', "Quit", quit_handler, NULL, 0}
+};
+const int main_menu_size = sizeof(main_menu) / sizeof(MenuItem);
+
+// ==== Application Menu Entry Point ====
 void app_menu_run(void)
 {
-    menu_run("BIOS Style Dynamic Menu", main_menu, sizeof(main_menu) / sizeof(MenuItem));
-}
-
-// LED Submenu and actions (static = internal only)
-static void led_toggle_action(void)
-{
-    bsp_uart_send("\r\n[LED] Toggled\r\n");
-}
-
-
-
-static void led_menu(void)
-{
-    menu_run("LED Control Menu", led_menu_items, sizeof(led_menu_items) / sizeof(MenuItem));
-}
-
-// Info Submenu and actions
-static void show_board_info(void)
-{
-    bsp_uart_send("\r\nBoard: Nucleo G431RB\r\n");
-}
-
-static void show_firmware_version(void)
-{
-    bsp_uart_send("\r\nFirmware: v1.0.0\r\n");
-}
-
-
-
-static void info_menu(void)
-{
-    menu_run("System Info Menu", info_menu_items, sizeof(info_menu_items) / sizeof(MenuItem));
-}
-
-// Quit action
-static void quit_menu(void)
-{
-    bsp_uart_send("\r\nExiting BIOS Menu.\r\n");
-    while (1) {}
+    menu_run("Main Menu", main_menu, main_menu_size);
 }
