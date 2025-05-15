@@ -1,45 +1,65 @@
-#include "vt100.h"
+#include "vt100_terminal.h"
+#include "vt100_esc.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <bsp_uart.h>
 
-// Clear entire screen
-void vt100_clear_screen(void)
+void vt100_terminal_clear_screen(void)
 {
     bsp_uart_send(VT100_CLEAR_SCREEN);
     bsp_uart_send(VT100_CURSOR_HOME);
 }
 
-// Set text color (using your macros directly)
-void vt100_set_text_color(const char* color_code)
-{
-    bsp_uart_send(color_code);
-}
-
-// Reset all attributes
-void vt100_reset_attributes(void)
+void vt100_terminal_reset_attributes(void)
 {
     bsp_uart_send(VT100_RESET_ATTRIBUTES);
 }
 
-// Toggle cursor visibility
-void vt100_cursor_toggle(void)
+void vt100_terminal_set_text_color(uint8_t color)
+{
+    char cmd[16];
+    sprintf(cmd, "\x1B[%dm", 30 + color);
+    bsp_uart_send(cmd);
+}
+
+void vt100_terminal_set_background_color(uint8_t color)
+{
+    char cmd[16];
+    sprintf(cmd, "\x1B[%dm", 40 + color);
+    bsp_uart_send(cmd);
+}
+
+void vt100_terminal_set_bold(void)
+{
+    bsp_uart_send(VT100_BOLD);
+}
+
+void vt100_terminal_set_italic(void)
+{
+    bsp_uart_send(VT100_ITALIC);
+}
+
+void vt100_terminal_set_underline(void)
+{
+    bsp_uart_send(VT100_UNDERLINE);
+}
+
+void vt100_terminal_cursor_toggle(void)
 {
     static uint8_t visible = 1;
-    if (visible)
-        bsp_uart_send(VT100_CURSOR_HIDE);
-    else
-        bsp_uart_send(VT100_CURSOR_SHOW);
+    bsp_uart_send(visible ? VT100_CURSOR_HIDE : VT100_CURSOR_SHOW);
     visible = !visible;
 }
 
-// Move cursor to row, column (formatted)
-void vt100_cursor_goto(uint8_t row, uint8_t col)
+void vt100_terminal_write(const char* str)
 {
-    char cmd[16];
-    sprintf(cmd, "\x1B[%d;%dH", row, col);
-    bsp_uart_send(cmd);
+    bsp_uart_send(str);
+}
+
+char vt100_terminal_read_char(void)
+{
+    return bsp_uart_receive_char();
 }
 
 

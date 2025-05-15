@@ -1,57 +1,123 @@
 #include "menu_manager.h"
-#include "bsp_uart.h"
-#include "vt100.h"
+#include "vt100_terminal.h"
+#include "terminal_settings.h"
+#include "app_menus.h"
 #include <stdio.h>
 #include <string.h>
 
-void menu_run(const char *title, const MenuItem *menu_table, int menu_size)
-{
-    char option = 0;
+char current_key = 0;
 
+// Markers using font/background/styles from pending settings
+static const char* get_marker_for_font_color(uint8_t color)
+{
+    if (terminal_settings_get_pending()->font_color == color)
+        return " [✔]";
+    return "";
+}
+
+static const char* get_marker_for_bg_color(uint8_t color)
+{
+    if (terminal_settings_get_pending()->background_color == color)
+        return " [✔]";
+    return "";
+}
+
+static const char* get_marker_for_style(uint8_t style)
+{
+    if (terminal_settings_get_pending()->styles & style)
+        return " [✔]";
+    return "";
+}
+
+// Simple key read
+static char read_key(void)
+{
+    return vt100_terminal_read_char();
+}
+
+void menu_manager_run(const char* title, const MenuItem* menu, int menu_size)
+{
     while (1)
     {
-        vt100_clear_screen();
-        bsp_uart_send(title);
-        bsp_uart_send("\r\n========================\r\n");
+        vt100_terminal_clear_screen();
+        vt100_terminal_write(title);
+        vt100_terminal_write("\r\n==============================\r\n");
 
-        // print the menu or submenu
         for (int i = 0; i < menu_size; i++)
         {
             char line[64];
-            sprintf(line, "%c. %s\r\n", menu_table[i].key, menu_table[i].description);
-            bsp_uart_send(line);
+
+            if (menu == font_color_menu)
+            {
+                uint8_t color = menu[i].key - '1';  // Use clean mapping
+                sprintf(line, "  %c. %s%s\r\n", menu[i].key, menu[i].description,
+                        get_marker_for_font_color(color));
+            }
+            else if (menu == bg_color_menu)
+            {
+                uint8_t color = menu[i].key - '1';
+                sprintf(line, "  %c. %s%s\r\n", menu[i].key, menu[i].description,
+                        get_marker_for_bg_color(color));
+            }
+            else if (menu == font_style_menu)
+            {
+                uint8_t style = (menu[i].key == '1') ? STYLE_BOLD :
+                                (menu[i].key == '2') ? STYLE_ITALIC :
+                                (menu[i].key == '3') ? STYLE_UNDERLINE : 0;
+                sprintf(line, "  %c. %s%s\r\n", menu[i].key, menu[i].description,
+                        get_marker_for_style(style));
+            }
+            else
+            {
+                sprintf(line, "  %c. %s\r\n", menu[i].key, menu[i].description);
+            }
+
+            vt100_terminal_write(line);
         }
 
-        bsp_uart_send("\r\nSelect option: ");
+        vt100_terminal_write("\r\nSelect option: ");
+        char key = read_key();
 
-        // Blocking reading
-        option = bsp_uart_receive_char();
+        char feedback[8];
+        sprintf(feedback, "%c\r\n", key);
+        vt100_terminal_write(feedback);
+
+        current_key = key;
 
         int found = 0;
-
-        // Loop through the indexes of a menu or a submenu
         for (int i = 0; i < menu_size; i++)
         {
-        	// check in each loop if there is a matching key
-            if (option == menu_table[i].key)
+            if (key == menu[i].key)
             {
-            	// found = 1 means the input char by the user match a key in a menu or submenu (does not handle duplicated keys)
                 found = 1;
-
-                // Print the selected menu or submenu
-                if (menu_table[i].submenu != NULL)
+                if (menu[i].submenu != NULL)
                 {
-                    menu_run(menu_table[i].description, menu_table[i].submenu, menu_table[i].submenu_size);
+                    menu_manager_run(menu[i].description,
+                                     menu[i].submenu,
+                                     menu[i].submenu_size);
                 }
-
-                // In case there is no action to do
-                else if (menu_table[i].action != NULL)
+                else if (menu[i].action != NULL)
                 {
-                    menu_table[i].action();
-                    bsp_uart_send("\r\nPress any key to continue...\r\n");
-                    bsp_uart_receive_char();
+                    const char* result = menu[i].action();
+                    if (result != NULL)
+                    {
+                        vt100_terminal_write("\r\n");
+
+                        if (strncmp(result, "@EXIT@", 6) == 0)
+                        {
+                            vt100_terminal_write(result + 6);
+                            vt100_terminal_write("\r\nPress any key to continue...\r\n");
+                            vt100_terminal_read_char();
+                            return;
+                        }
+                        else
+                        {
+                            vt100_terminal_write(result);
+                            vt100_terminal_write("\r\nPress any key to continue...\r\n");
+                            vt100_terminal_read_char();
+                        }
+                    }
                 }
-                // In case b is pressed 0 =>  NULL submenu and NULL action
                 else
                 {
                     return;
@@ -60,15 +126,13 @@ void menu_run(const char *title, const MenuItem *menu_table, int menu_size)
             }
         }
 
-        // In case any invalid char is entered
         if (!found)
         {
-        	char msg[32];
-        	sprintf(msg, "\r\n%c is Invalid option.\r\n", option);
-        	bsp_uart_send(msg);
-
-            bsp_uart_send("\r\nPress any key to continue...\r\n");
-            bsp_uart_receive_char();
+            char msg[64];
+            sprintf(msg, "\r\n'%c' is Invalid option.\r\n", key);
+            vt100_terminal_write(msg);
+            vt100_terminal_write("\r\nPress any key to continue...\r\n");
+            vt100_terminal_read_char();
         }
     }
 }

@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "app_menu.h"
+#include "app_menus.h"
 #include "bsp_uart.h"
 /* USER CODE END Includes */
 
