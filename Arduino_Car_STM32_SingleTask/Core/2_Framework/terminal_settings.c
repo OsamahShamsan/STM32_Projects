@@ -19,16 +19,16 @@ void terminal_settings_reset_all(void)
 void terminal_settings_apply(void)
 {
     active_settings = pending_settings;
-    vt100_terminal_reset_attributes();
-    vt100_terminal_set_background_color(active_settings.background_color);
-    vt100_terminal_set_text_color(active_settings.font_color);
+    //reset_attributes();
+    //set_background_color(active_settings.background_color);
+    //set_color(active_settings.font_color);
 
-    if (active_settings.styles & STYLE_BOLD)
-        vt100_terminal_set_bold();
-    if (active_settings.styles & STYLE_ITALIC)
-        vt100_terminal_set_italic();
-    if (active_settings.styles & STYLE_UNDERLINE)
-        vt100_terminal_set_underline();
+   // if (active_settings.styles & STYLE_BOLD)
+      //  set_bold();
+   // if (active_settings.styles & STYLE_ITALIC)
+       // set_attributes();
+   // if (active_settings.styles & STYLE_UNDERLINE)
+       // vt100_terminal_set_underline();
 }
 
 void terminal_settings_discard(void)

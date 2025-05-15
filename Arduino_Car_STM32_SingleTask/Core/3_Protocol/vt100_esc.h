@@ -9,7 +9,8 @@ extern "C" {
 #endif
 
 // Escape prefix
-#define ESC "\x1B"
+#define ESC 		"\x1B"
+#define NEW_LINE    "\r\n"
 
 // ----------------------
 // General control
@@ -51,7 +52,7 @@ extern "C" {
 #define VT100_ERASE_SCREEN_END      ESC "[0J"
 
 // ----------------------
-// Color (Foreground)
+// Color (Font/Foreground)
 // ----------------------
 #define VT100_BLACK                 ESC "[30m"
 #define VT100_RED                   ESC "[31m"

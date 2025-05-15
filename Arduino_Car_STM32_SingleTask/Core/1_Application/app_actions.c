@@ -1,16 +1,14 @@
 #include "menu_manager.h"
 #include "vt100_terminal.h"
 #include "terminal_settings.h"
-#include "bsp_gpio.h"
-#include "bsp_uart.h"
 #include "app_menus.h"
 #include <stdio.h>
 #include <string.h>
 
 // ==== LED Actions ====
-const char* led_toggle_action(void) { bsp_gpio_toggle(GPIOA, GPIO_PIN_5); return "[LED] Toggled."; }
-const char* led_on_action(void)     { bsp_gpio_set(GPIOA, GPIO_PIN_5); return "[LED] ON."; }
-const char* led_off_action(void)    { bsp_gpio_clear(GPIOA, GPIO_PIN_5); return "[LED] OFF."; }
+const char* led_toggle_action(void) { gpio_toggle(GPIOA, GPIO_PIN_5); return "[LED] Toggled."; }
+const char* led_on_action(void)     { gpio_set(GPIOA, GPIO_PIN_5); return "[LED] ON."; }
+const char* led_off_action(void)    { gpio_clear(GPIOA, GPIO_PIN_5); return "[LED] OFF."; }
 const char* quit_handler(void)      { return "Exiting BIOS Menu. (System Halted)"; }
 
 // ==== System Info Actions ====

@@ -21,7 +21,6 @@
 #include "main.h"
 #include "stm32g4xx_it.h"
 
-#include "../BSP/bsp_uart.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */

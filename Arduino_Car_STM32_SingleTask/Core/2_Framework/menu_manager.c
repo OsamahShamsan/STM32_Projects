@@ -32,16 +32,16 @@ static const char* get_marker_for_style(uint8_t style)
 // Simple key read
 static char read_key(void)
 {
-    return vt100_terminal_read_char();
+    return read_char();
 }
 
 void menu_manager_run(const char* title, const MenuItem* menu, int menu_size)
 {
     while (1)
     {
-        vt100_terminal_clear_screen();
-        vt100_terminal_write(title);
-        vt100_terminal_write("\r\n==============================\r\n");
+        clear_screen();
+        write_SRAM_text(title);
+        write_SRAM_text("\r\n==============================\r\n");
 
         for (int i = 0; i < menu_size; i++)
         {
@@ -72,15 +72,15 @@ void menu_manager_run(const char* title, const MenuItem* menu, int menu_size)
                 sprintf(line, "  %c. %s\r\n", menu[i].key, menu[i].description);
             }
 
-            vt100_terminal_write(line);
+            write_SRAM_text(line);
         }
 
-        vt100_terminal_write("\r\nSelect option: ");
+        write_SRAM_text("\r\nSelect option: ");
         char key = read_key();
 
         char feedback[8];
         sprintf(feedback, "%c\r\n", key);
-        vt100_terminal_write(feedback);
+        write_SRAM_text(feedback);
 
         current_key = key;
 
@@ -101,20 +101,20 @@ void menu_manager_run(const char* title, const MenuItem* menu, int menu_size)
                     const char* result = menu[i].action();
                     if (result != NULL)
                     {
-                        vt100_terminal_write("\r\n");
+                    	write_SRAM_text("\r\n");
 
                         if (strncmp(result, "@EXIT@", 6) == 0)
                         {
-                            vt100_terminal_write(result + 6);
-                            vt100_terminal_write("\r\nPress any key to continue...\r\n");
-                            vt100_terminal_read_char();
+                        	//write(result + 6);
+                        	write_SRAM_text("\r\nPress any key to continue...\r\n");
+                            read_char();
                             return;
                         }
                         else
                         {
-                            vt100_terminal_write(result);
-                            vt100_terminal_write("\r\nPress any key to continue...\r\n");
-                            vt100_terminal_read_char();
+                        	write_SRAM_text(result);
+                        	write_SRAM_text("\r\nPress any key to continue...\r\n");
+                            read_char();
                         }
                     }
                 }
@@ -130,9 +130,9 @@ void menu_manager_run(const char* title, const MenuItem* menu, int menu_size)
         {
             char msg[64];
             sprintf(msg, "\r\n'%c' is Invalid option.\r\n", key);
-            vt100_terminal_write(msg);
-            vt100_terminal_write("\r\nPress any key to continue...\r\n");
-            vt100_terminal_read_char();
+            write_SRAM_text(msg);
+            write_SRAM_text("\r\nPress any key to continue...\r\n");
+            read_char();
         }
     }
 }

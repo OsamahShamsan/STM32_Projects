@@ -1,8 +1,18 @@
 #include "app_menus.h"
 #include "terminal_settings.h"
 #include "menu_manager.h"
-#include "bsp_gpio.h"
 #include "app_actions.h"
+#include "vt100_terminal.h"
+
+// ==== Application Menu Entry Point ====
+void menu_run(UART_HandleTypeDef huart)
+{
+	uart_init(&huart);
+    //terminal_settings_reset_all();  // Ensure settings are reset on every start
+    //terminal_settings_apply();
+	clear_screen();
+    //menu_manager_run("Main Menu", main_menu, main_menu_size);
+}
 
 // ==== LED Menu ====
 const MenuItem led_menu[] = {
@@ -78,10 +88,4 @@ const MenuItem main_menu[] = {
 };
 const int main_menu_size = sizeof(main_menu) / sizeof(MenuItem);
 
-// ==== Application Menu Entry Point ====
-void app_menu_run(void)
-{
-    terminal_settings_reset_all();  // Ensure settings are reset on every start
-    terminal_settings_apply();
-    menu_manager_run("Main Menu", main_menu, main_menu_size);
-}
+

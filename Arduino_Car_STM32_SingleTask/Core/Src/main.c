@@ -22,7 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_menus.h"
-#include "bsp_uart.h"
+#include "bsp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -97,11 +97,9 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  bsp_uart_init(&huart2);
 
   //app_main();
-  app_menu_run();
-
+  menu_run(huart2);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN BSP */

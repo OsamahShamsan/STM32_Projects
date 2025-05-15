@@ -2,6 +2,10 @@
 #define APP_MENU_H_
 
 #include "menu_manager.h"
+#include "bsp.h"
+
+// App menu entry point
+void menu_run(UART_HandleTypeDef huart);
 
 // LED Menu
 extern const MenuItem led_menu[];
@@ -31,7 +35,6 @@ extern const int terminal_settings_menu_size;
 extern const MenuItem main_menu[];
 extern const int main_menu_size;
 
-// App menu entry point
-void app_menu_run(void);
+
 
 #endif // APP_MENU_H_
